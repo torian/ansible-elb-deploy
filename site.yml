@@ -1,0 +1,44 @@
+---
+
+- hosts: all
+  serial: 1
+
+# Pre tasks should disable monitoring
+
+  pre_tasks:
+    - name: Gather EC2 facts
+      ec2_facts:
+
+    - name: Disable alerts on <monitoring_system> 
+      debug: msg="Disable alerts for {{ ansible_ec2_instance_id }} on monitoring"
+#      ...
+#      delegate_to: "{{ item }}"
+
+    - name: Remove node from ELB
+      #debug: msg="Removing instance {{ ansible_ec2_instance_id }} from ELB"
+      local_action: ec2_elb
+      args: 
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        region:      "{{ aws.region }}"
+        ec2_elbs:    "{{ aws.ec2_elb }}"
+        state:       'absent'
+
+  roles:
+    - { role: tomcat, tags: [ 'undeploy' ] }
+#    - { role: tomcat, tags: [ 'deploy' ] }
+
+# Post tasks: reverse order for pre tasks
+
+  post_tasks:
+    - name: Add instance to ELB
+      local_action: ec2_elb
+      args: 
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        region:      "{{ aws.region }}"
+        ec2_elbs:    "{{ item }}"
+        state:       'present'
+      with_items: ec2_elbs
+
+    - name: Enable alerts
+      debug: msg="Enable alerts for instance {{ ansible_ec2_instance_id }} on monitoring"
+#      delegate_to: "{{ item }}"

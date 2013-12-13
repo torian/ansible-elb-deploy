@@ -1,0 +1,16 @@
+---
+
+service_name: tomcat7
+
+tomcat: {
+  prefix:     "/var/lib/tomcat7",
+  url:        "{{ tomcat_url }}",
+  http_port:  8080,
+  admin_usr:  'admin'
+  admin_pass: 'password',
+  actions: {
+    list:     'manager/text/list',
+    undeploy: 'manager/text/undeploy?path=',
+  }
+}
+

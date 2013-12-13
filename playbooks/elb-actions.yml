@@ -1,0 +1,39 @@
+---
+# Add or remove a node on AWS ELB
+# you have to specify the target (host) parameter
+
+- hosts: "{{ target }}"
+  serial: 1
+
+# Pre tasks should disable monitoring
+
+  pre_tasks:
+    - name: Gather EC2 facts
+      ec2_facts:
+      tags:
+        - add
+        - remove
+
+  tasks:
+    - name: Add instance to ELB
+      #debug: msg="Add instance {{ ansible_ec2_instance_id }} to ELB"
+      local_action: ec2_elb
+      args: 
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        region:      "{{ aws.region }}"
+        ec2_elbs:    "{{ item }}"
+        state:       'present'
+      with_items: aws.ec2_elb
+      tags: add
+
+    - name: Remove instance from ELB
+      #debug: msg="Removing instance {{ ansible_ec2_instance_id }} from ELB"
+      local_action: ec2_elb
+      args: 
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        region:      "{{ aws.region }}"
+        ec2_elbs:    "{{ item }}"
+        state:       'absent'
+      with_items: aws.ec2_elb
+      tags: remove
+

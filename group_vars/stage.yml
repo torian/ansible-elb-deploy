@@ -1,0 +1,12 @@
+---
+
+tomcat_url: http://{{ ansible_default_ipv4['address'] }}
+
+aws: {
+  region:  'eu-west-1',
+  ec2_elb: 'lp-stage',
+}
+
+app: {
+  context_root: '/',
+}

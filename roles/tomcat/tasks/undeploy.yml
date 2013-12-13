@@ -1,0 +1,33 @@
+--- 
+# Role variables (defined in vars/main.yml):
+#  - tomcat.url
+#  - tomcat.http_port
+#  - tomcat.actions.(list,undeploy)
+#  - tomcat.prefix
+#
+# Group variables:
+#  - app.context_root
+
+- name: Undeploy application
+  uri: 
+    url={{ tomcat.url }}:{{ tomcat.http_port }}/{{ tomcat.actions.undeploy }}{{ app.context_root }}
+    user={{ tomcat.admin_usr }} 
+    password={{ tomcat.admin_pass }}
+    return_content=yes
+  register: body
+  tags: undeploy
+
+- name: Verify undeploy
+  action: fail
+  when: "'OK' not in body.content"
+  tags: undeploy
+
+- name: Call handler stop
+  action: debug msg="Stop tomcat on {{ ansible_ec2_instance_id }} instance"
+  notify: stop tomcat
+  tags: undeploy
+
+- name: Clean work directory
+  debug: msg="Clean {{ tomcat.prefix }}/work directory"
+  tags: undeploy
+

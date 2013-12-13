@@ -1,0 +1,14 @@
+---
+
+- name: start tomcat
+  debug: msg="{{ service_name }} will be started"
+  #service: name={{ service_name }} state=started
+
+- name: stop tomcat
+  debug: msg="{{ service_name }} will be stopped"
+  #service: name={{ service_name }} state=stopped
+
+- name: restart tomcat
+  debug: msg="{{ service_name }} will be restarted"
+  #service: name={{ service_name }} state=restarted
+
