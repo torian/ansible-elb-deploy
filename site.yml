@@ -1,4 +1,12 @@
 ---
+#
+# Playbook: 
+#
+# Role variables:
+# - aws.region:  AWS region
+# - aws.ec2_elb: AWS Elastic Load Balancer name that the node belongs to
+#
+# 
 
 - hosts: all
   serial: 1
@@ -15,7 +23,6 @@
 #      delegate_to: "{{ item }}"
 
     - name: Remove node from ELB
-      #debug: msg="Removing instance {{ ansible_ec2_instance_id }} from ELB"
       local_action: ec2_elb
       args: 
         instance_id: "{{ ansible_ec2_instance_id }}"
@@ -23,13 +30,19 @@
         ec2_elbs:    "{{ aws.ec2_elb }}"
         state:       'absent'
 
+    - name: Disable service monitor
+      service: name='monit' state=stopped
+
   roles:
-    - { role: tomcat, tags: [ 'undeploy' ] }
-#    - { role: tomcat, tags: [ 'deploy' ] }
+    - { role: tomcat }
 
 # Post tasks: reverse order for pre tasks
 
   post_tasks:
+
+    - name: Enable service monitor
+      service: name='monit' state=started
+
     - name: Add instance to ELB
       local_action: ec2_elb
       args: 
@@ -42,3 +55,4 @@
     - name: Enable alerts
       debug: msg="Enable alerts for instance {{ ansible_ec2_instance_id }} on monitoring"
 #      delegate_to: "{{ item }}"
+

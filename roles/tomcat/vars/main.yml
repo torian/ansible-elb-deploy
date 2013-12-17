@@ -1,4 +1,9 @@
 ---
+# External Variables:
+#  * group_vars:
+#    - tomcat_url
+#    - admin_usr
+#    - admin_pass
 
 service_name: tomcat7
 
@@ -6,8 +11,12 @@ tomcat: {
   prefix:     "/var/lib/tomcat7",
   url:        "{{ tomcat_url }}",
   http_port:  8080,
-  admin_usr:  'admin'
-  admin_pass: 'password',
+
+  user:  'tomcat7',
+  group: 'tomcat7',
+
+  admin_usr:  "{{ admin_usr }}",
+  admin_pass: "{{ admin_pass }}",
   actions: {
     list:     'manager/text/list',
     undeploy: 'manager/text/undeploy?path=',

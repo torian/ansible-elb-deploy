@@ -1,2 +1,40 @@
 ---
-# none yet
+#
+# Role variables (vars/main.yml):
+# - 
+#
+# Group variables (group_vars/<group_name>.yml):
+# - app.artifact.user:    User to login into artifactory and download artifacts
+# - app.artifact.pass:    artifactory user password
+# - app.prefix_src:       prefix where to download the app file
+# - app.artifact.warname: warname
+# - app.symlink:          
+
+# Verify if war exists
+
+# verify if md5 matches
+
+
+# FIXME: move to get_url once they add username and password
+# FIXME: if md5 matches dont execute
+- name: Download application from repository 
+  command: wget 
+    --user={{ app.artifact.user }} --password={{ app.artifact.pass }}
+    -O {{ item }}
+    {{ app.artifact.url }}
+  with_items:
+    - "{{ app.prefix_src }}/{{ app.artifact.warname }}"
+  tags: deploy
+
+# Symlink webapps/{{ app.symlink }} to downloaded artifact
+# This step is the one that actually deploys the application
+- name: Symlink war to webapps
+  file:
+    src={{ app.prefix_src }}/{{ app.artifact.warname }}
+    dest={{ tomcat.prefix }}/webapps/{{ app.symlink }}
+    state=link
+  sudo: yes
+  sudo_user: tomcat7
+  notify: restart tomcat
+  tags: deploy
+

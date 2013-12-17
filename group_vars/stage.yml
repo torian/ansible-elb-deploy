@@ -1,6 +1,8 @@
 ---
 
 tomcat_url: http://{{ ansible_default_ipv4['address'] }}
+admin_usr:  'admin'
+admin_pass: 'pass'
 
 aws: {
   region:  'eu-west-1',
@@ -8,5 +10,11 @@ aws: {
 }
 
 app: {
+  artifact: {
+    url:  'http://artifacts.repository.foo',
+    user: 'user',
+    pass: 'pass',
+  },
   context_root: '/',
 }
+

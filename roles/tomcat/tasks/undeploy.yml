@@ -1,12 +1,18 @@
 --- 
-# Role variables (defined in vars/main.yml):
-#  - tomcat.url
-#  - tomcat.http_port
-#  - tomcat.actions.(list,undeploy)
-#  - tomcat.prefix
+# 
+# Role variables (vars/main.yml):
+#  - service_name:      Tomcat service name
+#  - tomcat.url         Tomcat url
+#  - tomcat.http_port   Tomcat port
+#  - tomcat.actions    
+#  - tomcat.prefix:     Tomcat home directory (prefix to webapps, work, conf)
+#  - tomcat.admin_usr:  Manager user name
+#  - tomcat.admin_pass: Manager password
 #
-# Group variables:
-#  - app.context_root
+# Group variables (group_vars/<group_name>.yml):
+#  - app.context_root: Application context root
+#  - app.work_dirname: Name of the work directory of this application
+
 
 - name: Undeploy application
   uri: 
@@ -17,17 +23,14 @@
   register: body
   tags: undeploy
 
-- name: Verify undeploy
-  action: fail
-  when: "'OK' not in body.content"
+- name: Stop tomcat
+  service: name={{ service_name }} state=stopped
+  sudo: yes
   tags: undeploy
 
-- name: Call handler stop
-  action: debug msg="Stop tomcat on {{ ansible_ec2_instance_id }} instance"
-  notify: stop tomcat
-  tags: undeploy
-
-- name: Clean work directory
-  debug: msg="Clean {{ tomcat.prefix }}/work directory"
+- name: Clean tomcat cache
+  file: dest={{ item }} state=absent
+  with_items:  
+    - "{{ tomcat.prefix }}/work/Catalina/localhost/{{ app.work_dirname }}"
   tags: undeploy
 
